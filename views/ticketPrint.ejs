@@ -1,0 +1,30 @@
+<html>
+
+<table>
+    <tr>
+        <td>手机号</td><td><input type="text" value="" id="mobile"/></td>
+        <td>票号</td><td><input type="text" value="" id="orderID"/></td>
+
+    </tr>
+    <button id="printTicket">出票</button>
+</table>
+
+
+</html>
+<script src="/javascripts/jquery-1.10.1.min.js"></script>
+<script>
+
+    $('#printTicket').click(function(e){
+        var mobile = $('#mobile').val();
+        var orderID = $('#orderID').val();
+        var machineID = '228';
+        $.ajax({
+            data:{mobile:mobile,orderID:orderID},
+            dataType:'jsonp',
+            url:'http://localhost:3000/test'
+        }).done(function(data){
+            alert(JSON.stringify(data));
+        });
+    });
+
+</script>
