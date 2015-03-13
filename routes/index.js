@@ -23,6 +23,25 @@ router.get('/ticket/print',function(req,res){
     res.render('ticketPrint',{});
 });
 
+router.get('/checkupdate',function(req,res){
+    res.send("1");
+});
+
+router.get('/checkfile',function(req,res){
+    fs.readFile('/home/ubuntu/test.gz',function(error,data){
+        var md5sum = crypto.createHash('md5');
+        md5sum.update(data);
+        var md5String =  md5sum.digest('hex');
+        res.set({
+            "Content-Disposition": "attachment; filename="+md5String+".gz",
+            "Content-Type": "application/text"
+        });
+
+        res.send(data);
+
+    });
+});
+
 /* GET home page. */
 router.post('/ticket/verify', function(request,response){
     var orderID    = request.body.orderID;
