@@ -20,7 +20,11 @@ var randomObjectId = function () {
 };
 
 router.get('/ticket/print', function (req, res) {
-    res.render('ticketPrint', {});
+    res.render('ticketPrint', {
+         'title' : "万车游-自动取票系统"
+        ,'attention' : "关注万车游微信免费领门票"
+        ,'service' : "客服电话：400-885-3885"
+    });
 });
 
 router.get('/checkupdate', function (req, res) {
@@ -45,9 +49,7 @@ router.get('/checkfile', function (req, res) {
             "Content-Disposition": "attachment; filename=" + md5String + ".tar.gz",
             "Content-Type": "application/text"
         });
-
         res.send(data);
-
     });
 });
 
@@ -58,6 +60,14 @@ router.post('/ticket/verify', function (request, response) {
     var mobile = request.body.mobile;
     var today = new Date();
     var pngFileName = [];
+    var printData = {
+        'productName'   : '玉龙雪山',
+        'useDate'       : '2015-03-15',
+        'ticketType'    : '门票',
+        'ticketPrice'   : 100,
+        'orderCode'     : '2015',
+        'qrWords'       : '扫一扫 再送一张'
+    };
     //var pngFileName  = './tmp/' + randomObjectId()+'.png'; //临时生成的png文件的名称
     today = new Date(today.getYear() + 1900, today.getMonth(), today.getDate()).getTime();
     var pdfFileName, couponCode, memberID, products, order_ID, activityType, orderInfo, QRUrl, ticketPDFBuf, couponCodeSize; //ticket1PDF 用来存储第一张ticket中的pdf的buffer数据
@@ -65,8 +75,24 @@ router.post('/ticket/verify', function (request, response) {
     couponCode = [];
     async.series([
         function (cb) {
+            //只选取已支付的  只能是当天的订单对应的member
+            // TODO 已支付的订单号是否唯一
+            //Order.findOne({ orderID : orderID, status : 1, startDate : today },{ "member" : true })
+            Order.findOne({ orderID : orderID, status : 3 },{ "member" : true })
+                .exec(function (error, memberInfo) {
+                if (error) {
+                    cb('queryMemberError', null);
+                } else if (memberInfo && memberInfo.member) {
+                    memberID = memberInfo.member;
+                    cb(null, null);
+                } else {
+                    cb('noSuchMember', null);
+                }
+            });
+        },
+        function (cb) {
             //查询下单人的memberID
-            Member.findOne({mobile: mobile}).exec(function (error, memberInfo) {
+            Member.findOne({_id : memberID,mobile: eval("/\\d{7}"+mobile+"/")}).exec(function (error, memberInfo) {
                 if (error) {
                     cb('queryMemberError', null);
                 } else if (memberInfo && memberInfo._id) {
@@ -97,42 +123,49 @@ router.post('/ticket/verify', function (request, response) {
         function (cb) {
             //只选取已支付的  只能是当天的订单可以打印 手机号必须正确
             //Order.findOne({ orderID : orderID, member : memberID, status : 1, startDate : today })
-            Order.findOne({orderID: '102778'})
-                .populate('product member coupon')
-                .exec(function (error, order) {
-                    if (error) {
-                        cb('queryOrderError', null);
-                    } else {
-                        if (order) {
-                            //获取订单优惠券type
-                            activityType = (order.coupon[0].type == 0) ? 0 : (order.coupon[0].type ? order.coupon[0].type : null);
-                            couponCodeSize = (activityType === 2) ? 2 : 1;
-
-                            //再检查下这个订单能不能在这个景区打印
-                            var isValidProduct = false;
-                            //console.log(JSON.stringify(products));
-                            for (var producti in products) {
-                                if (products[producti].toString() == order.product._id.toString()) {
-                                    isValidProduct = true;
-                                }
-                            }
-                            //先检查一下这个订单有没有被打印过
-                            if (order.isPrint == true) {
-                                //如果已经打印过了,就报错
-                                cb('ticketPrinted', null);
-                            } else if (!isValidProduct) {
-                                cb('notValidPlace', null);
-                            } else {
-                                order_ID = order._id;
-                                orderInfo = order;
-                                cb(null, order_ID);
-                            }
-                        } else {
-                            //如果找不到这个订单
-                            cb('noSuchOrder', null);
+            //Order.findOne({orderID: '102778'})
+            Order.findOne({ orderID : orderID, member : memberID, status : 3})
+            .populate('product member coupon')
+            .exec(function (error, order) {
+                if (error) {
+                    cb('queryOrderError', null);
+                } else {
+                    if (order) {
+                        //生成打印信息
+                        printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
+                        printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
+                        printData.productName = order.product.name;
+                        //获取订单优惠券type
+                        if(order.coupon[0] && order.coupon[0] !== undefined){
+                            activityType = (order.coupon[0].type == 0) ? 0 : (order.coupon[0].type ? order.coupon[0].type : undefined);
                         }
+                        couponCodeSize = (activityType === 2) ? 2 : 1;
+
+                        //再检查下这个订单能不能在这个景区打印
+                            var isValidProduct = false;
+                        //console.log(JSON.stringify(products));
+                        for (var producti in products) {
+                            if (products[producti].toString() == order.product._id.toString()) {
+                                isValidProduct = true;
+                            }
+                        }
+                        //先检查一下这个订单有没有被打印过
+                        if (order.isPrint == true) {
+                            //如果已经打印过了,就报错
+                            cb('ticketPrinted', null);
+                        } else if (!isValidProduct) {
+                            cb('notValidPlace', null);
+                        } else {
+                            order_ID = order._id;
+                            orderInfo = order;
+                            cb(null, order_ID);
+                        }
+                    } else {
+                        //如果找不到这个订单
+                        cb('noSuchOrder', null);
                     }
-                });
+                }
+            });
         },
         function (cb) {
             //优惠券识别码
@@ -189,10 +222,10 @@ router.post('/ticket/verify', function (request, response) {
                 };
             };
 
-            pdfFileName = './../tmp/' + memberID;
+            pdfFileName = 'tmp/' + memberID;
             for (var i = 0; i < couponCodeSize; i++) {
                 pdfFileName += '_' + couponCode[i];
-                pngFileName[i] = './../tmp/' + memberID + '_' + couponCode[i] + '_' + i + '.png'; //临时生成的png文件的名称
+                pngFileName[i] = 'tmp/' + memberID + '_' + couponCode[i] + '_' + i + '.png'; //临时生成的png文件的名称
                 QRUrl = 'http://dd885.com/ticketActivity?sourceMember=' + memberID + '&couponCode=' + couponCode[i];
                 tasks.push(createQRCode(QRUrl, pngFileName[i]));
             }
@@ -204,13 +237,13 @@ router.post('/ticket/verify', function (request, response) {
         function (cb) {
             //开始填写pdf1
             var doc = new PDFDocument();
-            var fontFilePath = './../fonts/msyh.ttf';
+            var fontFilePath = 'fonts/msyh.ttf';
             //console.log(JSON.stringify(orderInfo));
-            ticketDrawing(doc, fontFilePath, pngFileName[0], 'A', null);
+            ticketDrawing(doc, fontFilePath, pngFileName[0], 'A', printData);
 
             if (activityType == 2) {
                 doc.addPage();
-                ticketDrawing(doc, fontFilePath, pngFileName[1], 'B', null);
+                ticketDrawing(doc, fontFilePath, pngFileName[1], 'B', printData);
             }
 
             var pdf1stream = fs.createWriteStream(pdfFileName);
@@ -271,13 +304,13 @@ function ticketDrawing(doc, fontFilePath, pngFileName, idCode, data) {
     doc.rotate(180, {origin: [0, 0]});
     var firstColumnY = -125;
 
-    doc.font(fontFilePath).fontSize(8).text('玉龙雪山', -360, firstColumnY, {align: 'left'});//产品名称
+    doc.font(fontFilePath).fontSize(8).text(data.productName, -360, firstColumnY, {align: 'left'});//产品名称
     //doc.font(fontFilePath).fontSize(8).text(moment(orderInfo.startDate).format("YYYY-MM-DD"),-360,-119,{align:'left'});//使用日期
-    doc.font(fontFilePath).fontSize(8).text(('2015-03-05'), -360, firstColumnY + 32, {align: 'left'});//使用日期
-    doc.font(fontFilePath).fontSize(8).text('门票', -360, firstColumnY + 32 * 2, {align: 'left'});//票类型
-    doc.font(fontFilePath).fontSize(8).text(165, -360, firstColumnY + 32 * 3 - 10, {align: 'left'});//票价
-    doc.font(fontFilePath).fontSize(8).text('2010', -35, firstColumnY + 32 * 3, {align: 'left'});//识别码
-    doc.font(fontFilePath).fontSize(8).text('扫一扫 再送一张', -228, firstColumnY, {align: 'left'});//二维码文字
+    doc.font(fontFilePath).fontSize(8).text((data.useDate), -360, firstColumnY + 32, {align: 'left'});//使用日期
+    doc.font(fontFilePath).fontSize(8).text(data.ticketType, -360, firstColumnY + 32 * 2, {align: 'left'});//票类型
+    doc.font(fontFilePath).fontSize(8).text(data.ticketPrice, -360, firstColumnY + 32 * 3 - 10, {align: 'left'});//票价
+    doc.font(fontFilePath).fontSize(8).text(data.orderCode, -35, firstColumnY + 32 * 3, {align: 'left'});//识别码
+    doc.font(fontFilePath).fontSize(8).text(data.qrWords, -228, firstColumnY, {align: 'left'});//二维码文字
     doc.font(fontFilePath).fontSize(24).text(idCode, -44, firstColumnY + 10, {align: 'left'});//识别码
     doc.image(pngFileName, -240, firstColumnY + 10, {fit: [85, 85]}); //二维码
 };

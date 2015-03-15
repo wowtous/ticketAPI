@@ -1,4 +1,6 @@
 /node_modules/
 /.idea/
-/test/*
+/.idea/*.xml
+/test/
 /tmp/*
+/npm-debug.log
