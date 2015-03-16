@@ -1,3 +1,5 @@
+var debug = true;
+
 $(document).ready(function(){
     // 首次打开票号获取焦点
     $("#form-num").focus();
@@ -5,7 +7,7 @@ $(document).ready(function(){
 
     // 关闭弹窗
     $(".atm-pupClose").on("touchend click",function(){
-        $(this).parents(".pup-wrap").fadeOut(10);
+        $(this).parents(".pup-wrap").fadeOut(1);
     });
 
     //输入
@@ -24,8 +26,13 @@ $(document).ready(function(){
             _num = "";
             return false;
         }else{
-            _num = $(this).text();
-            _inputObj.value +=_num;
+            if(_inputObj.id === "form-num" && _inputObj.value.length<10){
+                _num = $(this).text();
+                _inputObj.value +=_num;
+            } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
+                _num = $(this).text();
+                _inputObj.value +=_num;
+            }
         }
     });
 
@@ -72,6 +79,7 @@ $(document).ready(function(){
 
     // 后台数据交互
     $("#printTicket").click(function(e){
+        e.preventDefault();
         var orderID = $('#form-num').val();
         var mobile = $('#form-tel').val();
         if(""===orderID||undefined===orderID||orderID.length<=0){
@@ -82,41 +90,35 @@ $(document).ready(function(){
             return null;
         }else {
             $("#ticketLoading").fadeIn(1);
-            alert("ticketLoading.");
             $.ajax({
-                data:{mobile:mobile,orderID:orderID},
-                type:'get',
-                url:'http://localhost:3457/print'
-            }).done(function(data){
-                alert(JSON.stringify(data));
-            });
-
-           /* $.ajax({
                 dataType:'jsonp',
                 url:'http://localhost:3457/print',
-                //cache:false,
+                cache:false,
                 data:{
-                     mobile  : mobile
+                    mobile  : mobile
                     ,orderID : orderID
                 }
-            }).done(function(err, data){
-                console.log(data);
-                $("#ticketLoading").fadeOut(1);
-                if(err.error!==0){
-                    $("#ticketError").fadeIn(1).fadeOut(5000);
-                }else{
-                    $("#ticketOutput").fadeIn(1);
-                    //TODO printDriver本地打印机打印并返回打印机状态码
-                    $("#ticketOutput").fadeOut(1);
-                    if(true){
-                        $("#ticketGet").fadeIn(1).fadeOut(5000);
-                    } else{
-                        $("#ticketError").fadeIn(1).fadeOut(5000);
-                    }
+            }).done(function(err){
+                if(debug){
+                    //console.log("-----------------------------------------------"+err);
+                    alert(err.error);
                 }
-            }).fail(function(){
-                $("#ticketSysError").fadeIn(1).fadeOut(5000);
-            });*/
+                $("#ticketLoading").fadeOut(1);
+                if(err.error===0){
+                    $("#ticketOutput").fadeIn(1);
+                    setTimeout(function(){
+                        $("#ticketOutput").fadeOut(1);
+                        $("#ticketGet").fadeIn(1);
+                        setTimeout(function(){ $("#ticketGet").fadeOut(1); },5000);
+                    },3000);
+                }else if(err.error===503){
+                    $("#ticketError").fadeIn(1);
+                    setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                }else{
+                    $("#ticketSysError").fadeIn(1);
+                    setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
+                }
+            });
         }
     });
 });

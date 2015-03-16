@@ -1,6 +1,5 @@
-/node_modules/
-/.idea/
-/.idea/*.xml
-/test/
-/tmp/*
-/npm-debug.log
+node_modules
+.idea
+test
+tmp/*
+*.log

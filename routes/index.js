@@ -66,7 +66,8 @@ router.post('/ticket/verify', function (request, response) {
         'ticketType'    : '门票',
         'ticketPrice'   : 100,
         'orderCode'     : '2015',
-        'qrWords'       : '扫一扫 再送一张'
+        'qrWords'       : '扫一扫 再送一张',
+        'orderID'       : ''
     };
     //var pngFileName  = './tmp/' + randomObjectId()+'.png'; //临时生成的png文件的名称
     today = new Date(today.getYear() + 1900, today.getMonth(), today.getDate()).getTime();
@@ -132,6 +133,7 @@ router.post('/ticket/verify', function (request, response) {
                 } else {
                     if (order) {
                         //生成打印信息
+                        printData.orderID = order.orderID;
                         printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
                         printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
                         printData.productName = order.product.name;
@@ -302,17 +304,19 @@ router.post('/ticket/verify', function (request, response) {
  */
 function ticketDrawing(doc, fontFilePath, pngFileName, idCode, data) {
     doc.rotate(180, {origin: [0, 0]});
-    var firstColumnY = -125;
+    var firstColumnY = -95;
+    var firstColumnX = -360;
 
-    doc.font(fontFilePath).fontSize(8).text(data.productName, -360, firstColumnY, {align: 'left'});//产品名称
+    doc.font(fontFilePath).fontSize(8).text(data.productName, firstColumnX, firstColumnY, {align: 'left'});//产品名称
     //doc.font(fontFilePath).fontSize(8).text(moment(orderInfo.startDate).format("YYYY-MM-DD"),-360,-119,{align:'left'});//使用日期
-    doc.font(fontFilePath).fontSize(8).text((data.useDate), -360, firstColumnY + 32, {align: 'left'});//使用日期
-    doc.font(fontFilePath).fontSize(8).text(data.ticketType, -360, firstColumnY + 32 * 2, {align: 'left'});//票类型
-    doc.font(fontFilePath).fontSize(8).text(data.ticketPrice, -360, firstColumnY + 32 * 3 - 10, {align: 'left'});//票价
-    doc.font(fontFilePath).fontSize(8).text(data.orderCode, -35, firstColumnY + 32 * 3, {align: 'left'});//识别码
-    doc.font(fontFilePath).fontSize(8).text(data.qrWords, -228, firstColumnY, {align: 'left'});//二维码文字
-    doc.font(fontFilePath).fontSize(24).text(idCode, -44, firstColumnY + 10, {align: 'left'});//识别码
-    doc.image(pngFileName, -240, firstColumnY + 10, {fit: [85, 85]}); //二维码
+    doc.font(fontFilePath).fontSize(8).text((data.useDate), firstColumnX, firstColumnY + 32, {align: 'left'});//使用日期
+    doc.font(fontFilePath).fontSize(8).text(data.ticketType, firstColumnX, firstColumnY + 62, {align: 'left'});//票类型
+    doc.font(fontFilePath).fontSize(8).text(data.ticketPrice, firstColumnX, firstColumnY + 94, {align: 'left'});//票价
+    doc.font(fontFilePath).fontSize(8).text(data.orderCode, firstColumnX+325, firstColumnY + 94, {align: 'left'});//识别码
+    doc.font(fontFilePath).fontSize(8).text(data.qrWords, firstColumnX+132, firstColumnY+12, {align: 'left'});//二维码文字
+    doc.font(fontFilePath).fontSize(24).text(idCode, firstColumnX+314, firstColumnY + 50, {align: 'left'});//识别码
+    doc.font(fontFilePath).fontSize(8).text(data.orderID, firstColumnX+292, firstColumnY + 130, {align: 'left'});//orderID
+    doc.image(pngFileName, firstColumnX+120, firstColumnY + 22, {fit: [85, 85]}); //二维码
 };
 
 module.exports = router;

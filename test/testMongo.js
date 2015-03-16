@@ -59,3 +59,40 @@ qrcode.save("./tmp/test.png", 'http://dd885.com/ticketActivity?sourceMember=5384
 });*/
 
 //console.log(moment(1426348800000).format("YYYY-MM-DD"));
+
+var printData = {
+    'productName'   : '玉龙雪山',
+    'useDate'       : '2015-03-15',
+    'ticketType'    : '门票',
+    'ticketPrice'   : 100,
+    'orderCode'     : '2015',
+    'qrWords'       : '扫一扫 再送一张',
+    'orderID'       : '102278'
+};
+
+var doc = new PDFDocument();
+var fontFilePath = './../fonts/msyh.ttf';
+var pdfFileName = '/home/wucho/ticket.pdf';
+
+ticketDrawing(doc, fontFilePath, "./../tmp/53840b4e8cd2f52e1bc65571_Bopaa_0.png", 'A', printData);
+
+var pdf1stream = fs.createWriteStream(pdfFileName);
+doc.pipe(pdf1stream);
+doc.end();
+
+function ticketDrawing(doc, fontFilePath, pngFileName, idCode, data) {
+    doc.rotate(180, {origin: [0, 0]});
+    var firstColumnY = -95;
+    var firstColumnX = -360;
+
+    doc.font(fontFilePath).fontSize(8).text(data.productName, firstColumnX, firstColumnY, {align: 'left'});//产品名称
+    //doc.font(fontFilePath).fontSize(8).text(moment(orderInfo.startDate).format("YYYY-MM-DD"),-360,-119,{align:'left'});//使用日期
+    doc.font(fontFilePath).fontSize(8).text((data.useDate), firstColumnX, firstColumnY + 32, {align: 'left'});//使用日期
+    doc.font(fontFilePath).fontSize(8).text(data.ticketType, firstColumnX, firstColumnY + 62, {align: 'left'});//票类型
+    doc.font(fontFilePath).fontSize(8).text(data.ticketPrice, firstColumnX, firstColumnY + 94, {align: 'left'});//票价
+    doc.font(fontFilePath).fontSize(8).text(data.orderCode, firstColumnX+325, firstColumnY + 94, {align: 'left'});//识别码
+    doc.font(fontFilePath).fontSize(8).text(data.qrWords, firstColumnX+132, firstColumnY+12, {align: 'left'});//二维码文字
+    doc.font(fontFilePath).fontSize(24).text(idCode, firstColumnX+314, firstColumnY + 50, {align: 'left'});//识别码
+    doc.font(fontFilePath).fontSize(8).text(data.orderID, firstColumnX+292, firstColumnY + 130, {align: 'left'});//orderID
+    doc.image(pngFileName, firstColumnX+120, firstColumnY + 22, {fit: [85, 85]}); //二维码
+};
