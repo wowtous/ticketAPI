@@ -8,6 +8,8 @@ $(document).ready(function(){
     // 关闭弹窗
     $(".atm-pupClose").on("touchend click",function(){
         $(this).parents(".pup-wrap").fadeOut(1);
+        $('#form-num').val('');
+        $('#form-tel').val('');
     });
 
     //输入
@@ -78,10 +80,11 @@ $(document).ready(function(){
     });
 
     // 后台数据交互
-    $("#printTicket").click(function(e){
+    $("#printTicket").on("touchend click",function(e){//.click(function(e){
         e.preventDefault();
         var orderID = $('#form-num').val();
         var mobile = $('#form-tel').val();
+        var isOK = false;
         if(""===orderID||undefined===orderID||orderID.length<=0){
             alert("请输入需要打印的订单号！");
             return null;
@@ -96,13 +99,13 @@ $(document).ready(function(){
                 cache:false,
                 data:{
                     mobile  : mobile
-                    ,orderID : orderID
+                   ,orderID : orderID
                 }
             }).done(function(err){
                 if(debug){
-                    //console.log("-----------------------------------------------"+err);
-                    alert(err.error);
+                    console.debug(err.error);
                 }
+                isOK = true;
                 $("#ticketLoading").fadeOut(1);
                 if(err.error===0){
                     $("#ticketOutput").fadeIn(1);
@@ -111,14 +114,49 @@ $(document).ready(function(){
                         $("#ticketGet").fadeIn(1);
                         setTimeout(function(){ $("#ticketGet").fadeOut(1); },5000);
                     },3000);
-                }else if(err.error===503){
+                } else if(err.error===702 || err.error===703){
+                    $('#ticketErrText').text(err.res.errorMsg);
                     $("#ticketError").fadeIn(1);
-                    setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
-                }else{
+                    if(err.res.error===699){
+                        setTimeout(function(){ $("#ticketError").fadeOut(1); },15000);
+                    } else{
+                        setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                    }
+                } else if(err.error===500){
+                    $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
+                    $("#ticketError").fadeIn(1);
+                    setTimeout(function(){ $("#ticketError").fadeOut(1); },15000);
+                } else{
                     $("#ticketSysError").fadeIn(1);
                     setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
                 }
+                // 清空输入项
+                $('#form-num').val('');
+                $('#form-tel').val('');
+            }).fail(function(err){
+                if(debug){
+                    console.debug(err.error);
+                }
+                $("#ticketLoading").fadeOut(1);
+                $('#ticketErrText').text('后台程序尚未运行');
+                $("#ticketError").fadeIn(1);
+                setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                // 清空输入项
+                $('#form-num').val('');
+                $('#form-tel').val('');
             });
+
+            setTimeout(function(){
+                if(!isOK){
+                    $("#ticketLoading").fadeOut(1);
+                    $('#ticketErrText').text('网络故障延迟或后台程序尚未运行');
+                    $("#ticketError").fadeIn(1);
+                    setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                    // 清空输入项
+                    $('#form-num').val('');
+                    $('#form-tel').val('');
+                }
+            },20000);
         }
     });
 });
