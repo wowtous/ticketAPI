@@ -123,82 +123,72 @@ router.post('/ticket/verify', function (request, response) {
             //查询机器编码对应的可打景区
             Machine.findOne({machineID: machineID}).exec(function (error, machine) {
                 if (error) {
-                    if(debug){
-                        console.log('queryMachineError 606,the mobile is:%s', mobile);
-                    }
+                    if(debug){ console.log('queryMachineError 606,the mobile is:%s', mobile); }
                     cb('queryMachineError', null);      // 机器编号不正常
                 } else {
                     if (machine && machine.products) {
                         products = JSON.parse(JSON.stringify(machine.products));
                         cb(null, null);
                     } else {
-                        if(debug){
-                            console.log('machineNotConfig 609,machine not configured,machine ID is:%s,machine result is %s', machineID, JSON.stringify(machine));
-                        }
+                        if(debug){ console.log('machineNotConfig 609,machine not configured,machine ID is:%s,machine result is %s', machineID, JSON.stringify(machine)); }
                         cb('machineNotConfig', null);   // 会员信息未找到
                     }
                 }
             });
         },
         function (cb) {
-            //只选取已确认的  只能是当天的订单可以打印 手机号必须正确
-            // TODO 是否更新订单打印状态
-            //Order.findOne({ orderID : orderID, member : memberID, status : 2, startDate : today })
-            Order.findOne({ orderID : orderID, member : memberID})
-            .populate('product member coupon')
-            .exec(function (error, order) {
+            // step1 只选取已确认的  只能是当天的订单可以打印 手机号后4位必须匹配正确
+            // Order.findOne({ orderID : orderID ,status : 2, startDate : today }) //生产环境
+            Order.findOne({ orderID : orderID ,status : 2 })  // 测试
+                .populate('product member coupon')
+                .exec(function (error, order) {
                 if (error) {
-                    if(debug){
-                        console.log('queryOrderError 602,the orderID is:%s', orderID);
-                    }
+                    if(debug){ console.log('queryOrderError 602,the orderID is:%s', orderID); }
                     cb('queryOrderError', null);
                 } else {
                     if (order) {
-                        //生成打印信息
-                        printData.orderID = order.orderID;
-                        printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
-                        printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
-                        printData.productName = order.product.name;
+                        // step2 再检查下这个订单能不能在这个景区打印
+                        var isValidProduct = false;
+                        //console.log(JSON.stringify(products));
+                        for (var producti in products) {
+                            if (products[producti].toString() == order.product._id.toString()) {
+                                isValidProduct = true;
+                            }
+                        }
 
+                        // step3 判断会员MOBILE后4位是否匹配
+                        var isValidMember = false;
                         var memberMobile = order.member.mobile;
-
-                        // 判断会员MOBILE是否合法
                         if(order.member && memberMobile.substring(memberMobile.length-4,memberMobile.length)===mobile){
-                            //获取订单优惠券type
+                            isValidMember = true;
+                            // step4 获取订单优惠券类型 (type==2) 打印2张 否则1张
                             if(order.coupon && order.coupon[0] && order.coupon[0].type===2){
                                 couponCodeSize = 2;
                             } else{
                                 couponCodeSize = 1;
                             }
+                        }
 
-                            //再检查下这个订单能不能在这个景区打印
-                            var isValidProduct = false;
-                            //console.log(JSON.stringify(products));
-                            for (var producti in products) {
-                                if (products[producti].toString() == order.product._id.toString()) {
-                                    isValidProduct = true;
-                                }
-                            }
-                            //先检查一下这个订单有没有被打印过
-                            if (order.isPrint == true) {
-                                //如果已经打印过了,就报错
-                                cb('ticketPrinted', null);
-                            } else if (!isValidProduct) {
-                                cb('notValidPlace', null);
-                            } else {
-                                order_ID = order._id;
-                                orderInfo = order;
-                                cb(null, null);
-                            }
-                        } else{
-                            cb('queryMemberError', null);   // 会员查询出错
+                        // step5 判断订单是否可打印
+                        if (order.isPrint) {
+                            cb('ticketPrinted', null); // 先检查一下这个订单有没有被打印过,如果已经打印过了,就报错
+                        } else if (!isValidProduct) {
+                            cb('notValidPlace', null);
+                        } else if (!isValidMember) {
+                            cb('queryOrderMemberError', null);
+                        } else {
+                            // 生成打印信息
+                            printData.orderID = order.orderID;
+                            printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
+                            printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
+                            printData.productName = order.product.name;
+                            order_ID = order._id;
+                            orderInfo = order;
+                            cb(null, null);
                         }
                     } else {
-                        //如果找不到这个订单
-                        if(debug){
-                            console.log('noSuchOrder 603,the orderID is:%s', orderID);
-                        }
-                        cb('noSuchOrder', null);
+                        if(debug){ console.log('noSuchOrder 603,the orderID is:%s', orderID); }
+                        cb('noSuchOrder', null); // 如果找不到这个订单
                     }
                 }
             });
@@ -214,17 +204,13 @@ router.post('/ticket/verify', function (request, response) {
                         cat: "twoside"
                     }, {isUsed: true}, function (error, couponData) {
                         if (error) {
-                            if(debug){
-                                console.log('queryCouponCodeError 611,error is %s', error);
-                            }
+                            if(debug){  console.log('queryCouponCodeError 611,error is %s', error); }
                             cb('queryCouponCodeError',null);
                         } else if (couponData && couponData.code) {
                             couponCode[i] = couponData.code;
                             cb(null, couponCode);
                         } else {
-                            if(debug){
-                                console.log('couponCodeNotExists 612');
-                            }
+                            if(debug){ console.log('couponCodeNotExists 612'); }
                             cb('couponCodeNotExists', null);
                         }
                     });
@@ -237,9 +223,7 @@ router.post('/ticket/verify', function (request, response) {
 
             async.series(tasks, function (error, result) {
                 if (error) {
-                    if(debug){
-                        console.log('GETCOUPONCODEERROR 610');
-                    }
+                    if(debug){ console.log('GETCOUPONCODEERROR 610'); }
                     cb('GETCOUPONCODEERROR', result);
                 } else {
                     cb(null, null);
@@ -256,9 +240,7 @@ router.post('/ticket/verify', function (request, response) {
                     //console.log(pngFileName+'\n'+QRUrl);
                     qrcode.save(pngFileName, QRUrl, function (error, written) {
                         if (error) {
-                            if(debug){
-                                console.log('QRGenerateFailed 607,error:QR Code generate failed,QRUrl is %s', QRUrl);
-                            }
+                            if(debug){ console.log('QRGenerateFailed 607,error:QR Code generate failed,QRUrl is %s', QRUrl); }
                             cb('QRGenerateFailed', null);
                         } else {
                             //console.log('%s,%s,%s QR image file : %s, size:%s', orderID, machineID, mobile, pngFileName, written);
@@ -295,9 +277,7 @@ router.post('/ticket/verify', function (request, response) {
             doc.end();
             pdf1stream.on('finish', function (error,result) {
                 if (error) {
-                    if(debug){
-                        console.log('pdfGenerateFailed 613');
-                    }
+                    if(debug){ console.log('pdfGenerateFailed 613'); }
                     cb('pdfGenerateFailed', null);
                 } else {
                     cb(null, null);
@@ -308,9 +288,7 @@ router.post('/ticket/verify', function (request, response) {
             //把上面生成的PDF1读出来
             fs.readFile(pdfFileName, function (error, data) {
                 if (error) {
-                    if(debug){
-                        console.log('readPDFError 608,error is %s', error);
-                    }
+                    if(debug){ console.log('readPDFError 608,error is %s', error); }
                     cb('readPDFError', null);
                 } else {
                     ticketPDFBuf = data;

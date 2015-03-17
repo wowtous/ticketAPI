@@ -1,5 +1,3 @@
-var debug = true;
-
 $(document).ready(function(){
     // 首次打开票号获取焦点
     $("#form-num").focus();
@@ -29,10 +27,10 @@ $(document).ready(function(){
             return false;
         }else{
             if(_inputObj.id === "form-num" && _inputObj.value.length<10){
-                _num = $(this).text();
+                _num = $(this).text().substring(0,1);
                 _inputObj.value +=_num;
             } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
-                _num = $(this).text();
+                _num = $(this).text().substring(0,1);
                 _inputObj.value +=_num;
             }
         }
@@ -118,14 +116,14 @@ $(document).ready(function(){
                     $('#ticketErrText').text(err.res.errorMsg);
                     $("#ticketError").fadeIn(1);
                     if(err.res.error===699){
-                        setTimeout(function(){ $("#ticketError").fadeOut(1); },15000);
+                        setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
                     } else{
                         setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
                     }
                 } else if(err.error===500){
                     $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
                     $("#ticketError").fadeIn(1);
-                    setTimeout(function(){ $("#ticketError").fadeOut(1); },15000);
+                    setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
                 } else{
                     $("#ticketSysError").fadeIn(1);
                     setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
@@ -138,7 +136,7 @@ $(document).ready(function(){
                     console.debug(err.error);
                 }
                 $("#ticketLoading").fadeOut(1);
-                $('#ticketErrText').text('后台程序尚未运行');
+                $('#ticketErrText').text('网络故障延迟或后台程序尚未运行');
                 $("#ticketError").fadeIn(1);
                 setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
                 // 清空输入项
