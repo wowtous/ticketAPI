@@ -78,7 +78,7 @@ router.post('/ticket/verify', function (request, response) {
     QRUrl = 'http://www.baidu.com';
     couponCode = [];
     async.series([
-        function (cb) {
+        /*function (cb) {
             //只选取已确认的  只能是当天的订单对应的member
             // TODO 已确认的订单号是否唯一
             //Order.findOne({ orderID : orderID, status : 2, startDate : today },{ "member" : true })
@@ -118,7 +118,7 @@ router.post('/ticket/verify', function (request, response) {
                     cb('noSuchMember', null);       // 会员信息未找到
                 }
             });
-        },
+        },*/
         function (cb) {
             //查询机器编码对应的可打景区
             Machine.findOne({machineID: machineID}).exec(function (error, machine) {
@@ -144,7 +144,7 @@ router.post('/ticket/verify', function (request, response) {
             //只选取已确认的  只能是当天的订单可以打印 手机号必须正确
             // TODO 是否更新订单打印状态
             //Order.findOne({ orderID : orderID, member : memberID, status : 2, startDate : today })
-            Order.findOne({ orderID : orderID, member : memberID, status : 3})
+            Order.findOne({ orderID : orderID, member : memberID})
             .populate('product member coupon')
             .exec(function (error, order) {
                 if (error) {
@@ -159,30 +159,39 @@ router.post('/ticket/verify', function (request, response) {
                         printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
                         printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
                         printData.productName = order.product.name;
-                        //获取订单优惠券type
-                        if(order.coupon[0] && order.coupon[0] !== undefined){
-                            activityType = (order.coupon[0].type == 0) ? 0 : (order.coupon[0].type ? order.coupon[0].type : undefined);
-                        }
-                        couponCodeSize = (activityType === 2) ? 2 : 1;
 
-                        //再检查下这个订单能不能在这个景区打印
-                            var isValidProduct = false;
-                        //console.log(JSON.stringify(products));
-                        for (var producti in products) {
-                            if (products[producti].toString() == order.product._id.toString()) {
-                                isValidProduct = true;
+                        var memberMobile = order.member.mobile;
+
+                        // 判断会员MOBILE是否合法
+                        if(order.member && memberMobile.substring(memberMobile.length-4,memberMobile.length)===mobile){
+                            //获取订单优惠券type
+                            if(order.coupon && order.coupon[0] && order.coupon[0].type===2){
+                                couponCodeSize = 2;
+                            } else{
+                                couponCodeSize = 1;
                             }
-                        }
-                        //先检查一下这个订单有没有被打印过
-                        if (order.isPrint == true) {
-                            //如果已经打印过了,就报错
-                            cb('ticketPrinted', null);
-                        } else if (!isValidProduct) {
-                            cb('notValidPlace', null);
-                        } else {
-                            order_ID = order._id;
-                            orderInfo = order;
-                            cb(null, null);
+
+                            //再检查下这个订单能不能在这个景区打印
+                            var isValidProduct = false;
+                            //console.log(JSON.stringify(products));
+                            for (var producti in products) {
+                                if (products[producti].toString() == order.product._id.toString()) {
+                                    isValidProduct = true;
+                                }
+                            }
+                            //先检查一下这个订单有没有被打印过
+                            if (order.isPrint == true) {
+                                //如果已经打印过了,就报错
+                                cb('ticketPrinted', null);
+                            } else if (!isValidProduct) {
+                                cb('notValidPlace', null);
+                            } else {
+                                order_ID = order._id;
+                                orderInfo = order;
+                                cb(null, null);
+                            }
+                        } else{
+                            cb('queryMemberError', null);   // 会员查询出错
                         }
                     } else {
                         //如果找不到这个订单
