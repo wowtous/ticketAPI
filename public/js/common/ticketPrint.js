@@ -25,7 +25,8 @@ $(document).ready(function(){
 
     // 输入数字
     $(".num-keypad-wrap").on("click",".keypad-item",function(){
-        if(new Date().getTIme() - lastClickTime <600){
+        var tmpClickTime = new Date().getTime();
+        if(tmpClickTime - lastClickTime <600){
             return false;
         }else{
             if(typeof _inputObj == "undefined"){
@@ -41,7 +42,7 @@ $(document).ready(function(){
                 }
             }
         }
-        lastClickTime = new Date().getTime();
+        lastClickTime = tmpClickTime;
     });
 
     //删除数字
