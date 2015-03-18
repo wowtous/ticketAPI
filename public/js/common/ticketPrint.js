@@ -125,6 +125,16 @@ $(document).ready(function(){
         }
     };
 
+    var ticketOut = function(obj1,obj2){
+        if(typeof(obj1) !=="undefined" && obj1 ){ obj1.fadeIn(1); }
+        if(typeof(obj2) !=="undefined" && obj2 ){ obj2.fadeOut(1); }
+        // 清空输入项
+        $('#form-num').val('');
+        $('#form-tel').val('');
+        _toggle = false;
+        toggleFocus();
+    };
+
     // 后台数据交互
     $("#printTicket").on("click",function(e){//.click(function(e){
         e.preventDefault();
@@ -162,29 +172,30 @@ $(document).ready(function(){
                         setTimeout(function(){
                             $("#ticketOutput").fadeOut(1);
                             $("#ticketGet").fadeIn(1);
-                            setTimeout(function(){ $("#ticketGet").fadeOut(1); },5000);
+                            setTimeout(function(){
+                                ticketOut(null,$("#ticketGet"));
+                            },5000);
                         },3000);
                     } else if(err.error===704){
                         $("#ticketSysError").fadeIn(1);
-                        setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
+                        setTimeout(function(){
+                            ticketOut(null,$("#ticketSysError"));
+                        },5000);
                     } else if(err.error===500){
                         $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
                         $("#ticketError").fadeIn(1);
-                        setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
+                        setTimeout(function(){
+                            ticketOut(null,$("#ticketError"));
+                        },10000);
                     } else {
                         $('#ticketErrText').text(err.errorMsg);
                         $("#ticketError").fadeIn(1);
                         if(err.error===699){
-                            setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
+                            setTimeout(function(){ ticketOut(null,$("#ticketError"));  },10000);
                         } else{
-                            setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                            setTimeout(function(){ ticketOut(null,$("#ticketError"));  },5000);
                         }
                     }
-                    // 清空输入项
-                    $('#form-num').val('');
-                    $('#form-tel').val('');
-                    _toggle = false;
-                    toggleFocus();
                 });
 
                 setTimeout(function(){
@@ -192,12 +203,7 @@ $(document).ready(function(){
                         $("#ticketLoading").fadeOut(1);
                         $('#ticketErrText').text('网络故障延迟或后台程序尚未运行');
                         $("#ticketError").fadeIn(1);
-                        setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
-                        // 清空输入项
-                        $('#form-num').val('');
-                        $('#form-tel').val('');
-                        _toggle = false;
-                        toggleFocus();
+                        setTimeout(function(){ ticketOut(null,$("#ticketError")); },5000);
                     }
                 },20000);
             }
