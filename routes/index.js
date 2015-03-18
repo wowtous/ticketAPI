@@ -139,7 +139,7 @@ router.post('/ticket/verify', function (request, response) {
         function (cb) {
             // step1 只选取已确认的  只能是当天的订单可以打印 手机号后4位必须匹配正确
             // Order.findOne({ orderID : orderID ,status : 2, startDate : today }) //生产环境
-            Order.findOne({ orderID : orderID ,status : 2 })  // 测试
+            Order.findOne({ orderID : orderID})  // 测试
                 .populate('product member coupon')
                 .exec(function (error, order) {
                 if (error) {
@@ -302,9 +302,9 @@ router.post('/ticket/verify', function (request, response) {
         } else if (error == 'noSuchMember') {
             response.json({error: 601, errorMsg: '会员信息未找到'});
         } else if (error == 'queryOrderError') {
-            response.json({error: 602, errorMsg: '订单查询出错'});
+            response.json({error: 602, errorMsg: '订单信息查询出错'});
         } else if (error == 'noSuchOrder') {
-            response.json({error: 603, errorMsg: '订单信息未找到'});
+            response.json({error: 603, errorMsg: '无匹配可打印订单'});
         } else if (error == 'notValidPlace') {
             response.json({error: 604, errorMsg: '此订单不能在此机器上打印'});
         } else if (error == 'ticketPrinted') {
@@ -314,7 +314,7 @@ router.post('/ticket/verify', function (request, response) {
         } else if (error == 'QRGenerateFailed') {
             response.json({error: 607, errorMsg: "二维码生成失败"});
         } else if (error == 'readPDFError') {
-            response.json({error: 608, errorMsg: "PDF生成失败"});
+            response.json({error: 608, errorMsg: "门票生成失败"});
         } else if (error == 'machineNotConfig') {
             response.json({error: 609, errorMsg: "机器暂未上线"});
         } else if (error == 'GETCOUPONCODEERROR') {

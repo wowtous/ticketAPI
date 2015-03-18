@@ -1,3 +1,4 @@
+var debug = true;
 $(document).ready(function(){
     // 首次打开票号获取焦点
     $("#form-num").focus();
@@ -112,26 +113,26 @@ $(document).ready(function(){
                         $("#ticketGet").fadeIn(1);
                         setTimeout(function(){ $("#ticketGet").fadeOut(1); },5000);
                     },3000);
-                } else if(err.error===702 || err.error===703){
-                    $('#ticketErrText').text(err.res.errorMsg);
-                    $("#ticketError").fadeIn(1);
-                    if(err.res.error===699){
-                        setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
-                    } else{
-                        setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
-                    }
+                } else if(err.error===704){
+                    $("#ticketSysError").fadeIn(1);
+                    setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
                 } else if(err.error===500){
                     $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
                     $("#ticketError").fadeIn(1);
                     setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
-                } else{
-                    $("#ticketSysError").fadeIn(1);
-                    setTimeout(function(){ $("#ticketSysError").fadeOut(1); },5000);
+                } else {
+                    $('#ticketErrText').text(err.errorMsg);
+                    $("#ticketError").fadeIn(1);
+                    if(err.error===699){
+                        setTimeout(function(){ $("#ticketError").fadeOut(1); },10000);
+                    } else{
+                        setTimeout(function(){ $("#ticketError").fadeOut(1); },5000);
+                    }
                 }
                 // 清空输入项
                 $('#form-num').val('');
                 $('#form-tel').val('');
-            }).fail(function(err){
+            });/*.fail(function(err){
                 if(debug){
                     console.debug(err.error);
                 }
@@ -142,7 +143,7 @@ $(document).ready(function(){
                 // 清空输入项
                 $('#form-num').val('');
                 $('#form-tel').val('');
-            });
+            })*/
 
             setTimeout(function(){
                 if(!isOK){
