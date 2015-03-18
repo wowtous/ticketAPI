@@ -14,8 +14,8 @@ $(document).ready(function(){
             return false;
         }else{
             $(this).parents(".pup-wrap").fadeOut(1);
-            $('#form-num').val('');
-            $('#form-tel').val('');
+            //$('#form-num').val('');
+            //$('#form-tel').val('');
             _toggle = false;
             toggleFocus();
         }
@@ -34,6 +34,11 @@ $(document).ready(function(){
             _inputObj = this;
             _num = "";
             $(this).addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
+            if(_inputObj.id==="form-num"){
+                _toggle = true;
+            } else{
+                _toggle = false;
+            }
         }
         lastClickTime = tmpClickTime;
     });
@@ -88,6 +93,7 @@ $(document).ready(function(){
                 _inputObj = document.querySelector("#form-tel");
                 _toggle = false;
             }else{
+                ticketSubmit();
                 $("#form-num").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
                 _inputObj = document.querySelector("#form-num");
                 _toggle = true;
@@ -115,6 +121,7 @@ $(document).ready(function(){
 
     var toggleFocus = function(){
         if(_toggle ==true){
+            $("#printTicket").on("click",ticketSubmit(e));
             $("#form-tel").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
             _inputObj = document.querySelector("#form-tel");
             _toggle = false;
@@ -125,19 +132,19 @@ $(document).ready(function(){
         }
     };
 
-    var ticketOut = function(obj1,obj2){
+    var ticketOut = function(obj1,obj2,isArgsKeep){
         if(typeof(obj1) !=="undefined" && obj1 ){ obj1.fadeIn(1); }
         if(typeof(obj2) !=="undefined" && obj2 ){ obj2.fadeOut(1); }
-        // 清空输入项
-        $('#form-num').val('');
-        $('#form-tel').val('');
-        _toggle = false;
-        toggleFocus();
+        if(!isArgsKeep){
+            // 清空输入项
+            $('#form-num').val('');
+            $('#form-tel').val('');
+            _toggle = false;
+            toggleFocus();
+        }
     };
 
-    // 后台数据交互
-    $("#printTicket").on("click",function(e){//.click(function(e){
-        e.preventDefault();
+    var ticketSubmit = function(){//.click(function(e){
         var tmpClickTime = new Date().getTime();
         if(tmpClickTime - lastClickTime <120){
             return false;
@@ -145,13 +152,15 @@ $(document).ready(function(){
             var orderID = $('#form-num').val();
             var mobile = $('#form-tel').val();
             var isOK = false;
-            if(""===orderID||undefined===orderID||orderID.length<=0){
-                alert("请输入需要打印的订单号！");
-                return null;
-            }else if(""===mobile||undefined===mobile||mobile.length!=4){
-                alert("请输入正确的手机号码后4位！");
-                return null;
-            }else {
+            if(""===orderID||typeof(orderID)==="undefined"||orderID.length<=0){
+                $('#ticketErrText').text('请输入需要打印的订单号！');
+                ticketOut($("#ticketError"),null,true);
+                return false;
+            } else if(""===mobile||typeof(mobile)==="undefined"||mobile.length!=4){
+                $('#ticketErrText').text('请输入正确的手机号码后4位！');
+                ticketOut($("#ticketError"),null,true);
+                return false;
+            } else {
                 $("#ticketLoading").fadeIn(1);
                 $.ajax({
                     dataType:'jsonp',
@@ -173,27 +182,27 @@ $(document).ready(function(){
                             $("#ticketOutput").fadeOut(1);
                             $("#ticketGet").fadeIn(1);
                             setTimeout(function(){
-                                ticketOut(null,$("#ticketGet"));
+                                ticketOut(null,$("#ticketGet"),false);
                             },5000);
                         },3000);
                     } else if(err.error===704){
                         $("#ticketSysError").fadeIn(1);
                         setTimeout(function(){
-                            ticketOut(null,$("#ticketSysError"));
+                            ticketOut(null,$("#ticketSysError"),true);
                         },5000);
                     } else if(err.error===500){
                         $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
                         $("#ticketError").fadeIn(1);
                         setTimeout(function(){
-                            ticketOut(null,$("#ticketError"));
+                            ticketOut(null,$("#ticketError"),true);
                         },10000);
                     } else {
                         $('#ticketErrText').text(err.errorMsg);
                         $("#ticketError").fadeIn(1);
                         if(err.error===699){
-                            setTimeout(function(){ ticketOut(null,$("#ticketError"));  },10000);
+                            setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },10000);
                         } else{
-                            setTimeout(function(){ ticketOut(null,$("#ticketError"));  },5000);
+                            setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },5000);
                         }
                     }
                 });
@@ -203,11 +212,17 @@ $(document).ready(function(){
                         $("#ticketLoading").fadeOut(1);
                         $('#ticketErrText').text('网络故障延迟或后台程序尚未运行');
                         $("#ticketError").fadeIn(1);
-                        setTimeout(function(){ ticketOut(null,$("#ticketError")); },5000);
+                        setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },5000);
                     }
                 },20000);
             }
         }
         lastClickTime = tmpClickTime;
+    };
+
+    // 后台数据交互
+    $("#printTicket").on("click",function(e){
+        e.preventDefault();
+        ticketSubmit()
     });
 });
