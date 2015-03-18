@@ -1,4 +1,5 @@
 var debug = true;
+var lastClickTime = 0;
 $(document).ready(function(){
     // 首次打开票号获取焦点
     $("#form-num").focus();
@@ -9,6 +10,7 @@ $(document).ready(function(){
         $(this).parents(".pup-wrap").fadeOut(1);
         $('#form-num').val('');
         $('#form-tel').val('');
+        $("#form-num").focus();
     });
 
     //输入
@@ -23,18 +25,23 @@ $(document).ready(function(){
 
     // 输入数字
     $(".num-keypad-wrap").on("touchend click",".keypad-item",function(){
-        if(typeof _inputObj == "undefined"){
-            _num = "";
+        if(new Date().getTIme() - lastClickTime <600){
             return false;
         }else{
-            if(_inputObj.id === "form-num" && _inputObj.value.length<10){
-                _num = $(this).text().substring(0,1);
-                _inputObj.value +=_num;
-            } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
-                _num = $(this).text().substring(0,1);
-                _inputObj.value +=_num;
+            if(typeof _inputObj == "undefined"){
+                _num = "";
+                return false;
+            }else{
+                if(_inputObj.id === "form-num" && _inputObj.value.length<10){
+                    _num = $(this).text().substring(0,1);
+                    _inputObj.value +=_num;
+                } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
+                    _num = $(this).text().substring(0,1);
+                    _inputObj.value +=_num;
+                }
             }
         }
+        lastClickTime = new Date().getTime();
     });
 
     //删除数字
@@ -132,6 +139,7 @@ $(document).ready(function(){
                 // 清空输入项
                 $('#form-num').val('');
                 $('#form-tel').val('');
+                $("#form-num").focus();
             });/*.fail(function(err){
                 if(debug){
                     console.debug(err.error);
@@ -154,6 +162,7 @@ $(document).ready(function(){
                     // 清空输入项
                     $('#form-num').val('');
                     $('#form-tel').val('');
+                    $("#form-num").focus();
                 }
             },20000);
         }

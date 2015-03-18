@@ -60,7 +60,7 @@ qrcode.save("./tmp/test.png", 'http://dd885.com/ticketActivity?sourceMember=5384
 
 //console.log(moment(1426348800000).format("YYYY-MM-DD"));
 
-var printData = {
+/*var printData = {
     'productName'   : '玉龙雪山',
     'useDate'       : '2015-03-15',
     'ticketType'    : '门票',
@@ -95,4 +95,60 @@ function ticketDrawing(doc, fontFilePath, pngFileName, idCode, data) {
     doc.font(fontFilePath).fontSize(24).text(idCode, firstColumnX+314, firstColumnY + 50, {align: 'left'});//识别码
     doc.font(fontFilePath).fontSize(8).text(data.orderID, firstColumnX+292, firstColumnY + 130, {align: 'left'});//orderID
     doc.image(pngFileName, firstColumnX+120, firstColumnY + 22, {fit: [85, 85]}); //二维码
-};
+};*/
+
+
+Order.findOne({ orderID : "102778"})  // 测试
+    .populate('product member coupon')
+    .exec(function (error, order) {
+        if (error) {
+            if(debug){ console.log('queryOrderError 602,the orderID is:%s', orderID); }
+            cb('queryOrderError', null);
+        } else {
+            if (order) {
+                // step2 再检查下这个订单能不能在这个景区打印
+                var isValidProduct = false;
+                //console.log(JSON.stringify(products));
+                for (var producti in products) {
+                    if (products[producti].toString() == order.product._id.toString()) {
+                        isValidProduct = true;
+                    }
+                }
+
+                // step3 判断会员MOBILE后4位是否匹配
+                var isValidMember = false;
+                var memberMobile = order.member.mobile;
+                if(order.member && memberMobile.substring(memberMobile.length-4,memberMobile.length)===mobile){
+                    isValidMember = true;
+                    // step4 获取订单优惠券类型 (type==2) 打印2张 否则1张
+                    console.log(order.coupon[0]);
+                    if(order.coupon && order.coupon[0] && order.coupon[0].type===2){
+                        couponCodeSize = 2;
+                    } else{
+                        couponCodeSize = 1;
+                    }
+                }
+
+                // step5 判断订单是否可打印
+                if (order.isPrint) {
+                    cb('ticketPrinted', null); // 先检查一下这个订单有没有被打印过,如果已经打印过了,就报错
+                } else if (!isValidProduct) {
+                    cb('notValidPlace', null);
+                } else if (!isValidMember) {
+                    cb('queryOrderMemberError', null);
+                } else {
+                    // 生成打印信息
+                    printData.orderID = order.orderID;
+                    printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
+                    printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
+                    printData.productName = order.product.name;
+                    order_ID = order._id;
+                    orderInfo = order;
+                    cb(null, null);
+                }
+            } else {
+                if(debug){ console.log('noSuchOrder 603,the orderID is:%s', orderID); }
+                cb('noSuchOrder', null); // 如果找不到这个订单
+            }
+        }
+    });

@@ -74,7 +74,7 @@ router.post('/ticket/verify', function (request, response) {
     };
     //var pngFileName  = './tmp/' + randomObjectId()+'.png'; //临时生成的png文件的名称
     today = new Date(today.getYear() + 1900, today.getMonth(), today.getDate()).getTime();
-    var pdfFileName, couponCode, memberID, products, order_ID, activityType, orderInfo, QRUrl, ticketPDFBuf, couponCodeSize; //ticket1PDF 用来存储第一张ticket中的pdf的buffer数据
+    var pdfFileName, couponCode, memberID, products, order_ID, orderInfo, QRUrl, ticketPDFBuf, couponCodeSize; //ticket1PDF 用来存储第一张ticket中的pdf的buffer数据
     QRUrl = 'http://www.baidu.com';
     couponCode = [];
     async.series([
@@ -161,6 +161,7 @@ router.post('/ticket/verify', function (request, response) {
                         var memberMobile = order.member.mobile;
                         if(order.member && memberMobile.substring(memberMobile.length-4,memberMobile.length)===mobile){
                             isValidMember = true;
+                            memberID = order.member._id+"";
                             // step4 获取订单优惠券类型 (type==2) 打印2张 否则1张
                             if(order.coupon && order.coupon[0] && order.coupon[0].type===2){
                                 couponCodeSize = 2;
@@ -267,7 +268,7 @@ router.post('/ticket/verify', function (request, response) {
             var doc = new PDFDocument();
             ticketDrawing(doc, fontFilePath, pngFileName[0], 'A', printData);
 
-            if (activityType == 2) {
+            if (couponCodeSize == 2) {
                 doc.addPage();
                 ticketDrawing(doc, fontFilePath, pngFileName[1], 'B', printData);
             }
