@@ -1,11 +1,12 @@
 var debug = true;
 var lastClickTime = 0;
+
 $(document).ready(function(){
     // 首次打开票号获取焦点
     $("#form-num").focus();
     $(".pup-wrap").fadeOut(1);
-    //切换焦点
-    var _toggle = true;
+
+    var _toggle = true;  //切换焦点
 
     // 关闭弹窗
     $(".atm-pupClose").on("click",function(){
@@ -14,10 +15,7 @@ $(document).ready(function(){
             return false;
         }else{
             $(this).parents(".pup-wrap").fadeOut(1);
-            //$('#form-num').val('');
-            //$('#form-tel').val('');
-            _toggle = false;
-            toggleFocus();
+            toggleFocus(!_toggle);
         }
         lastClickTime = tmpClickTime;
     });
@@ -54,10 +52,10 @@ $(document).ready(function(){
                 return false;
             }else{
                 if(_inputObj.id === "form-num" && _inputObj.value.length<10){
-                    _num = $(this).text().substring(0,1);
+                    _num = $(this).text();
                     _inputObj.value +=_num;
                 } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
-                    _num = $(this).text().substring(0,1);
+                    _num = $(this).text();
                     _inputObj.value +=_num;
                 }
             }
@@ -88,15 +86,10 @@ $(document).ready(function(){
         if(tmpClickTime - lastClickTime <120){
             return false;
         }else{
-            if(_toggle ==true){
-                $("#form-tel").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
-                _inputObj = document.querySelector("#form-tel");
-                _toggle = false;
-            }else{
+            if(_toggle){
+                toggleFocus(_toggle);
+            } else {
                 ticketSubmit();
-                $("#form-num").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
-                _inputObj = document.querySelector("#form-num");
-                _toggle = true;
             }
         }
         lastClickTime = tmpClickTime;
@@ -104,10 +97,10 @@ $(document).ready(function(){
 
     // 动画
     $(".load-item2").velocity({
-        bottom:0,
-        opacity:0
+        //bottom:0,
+        opacity:0.3
     },{
-        duration:1500,
+        duration:800,
         loop:true
     });
     $(".chupiao i").velocity({
@@ -126,9 +119,8 @@ $(document).ready(function(){
         loop:true
     });
 
-    var toggleFocus = function(){
-        if(_toggle ==true){
-            $("#printTicket").on("click",ticketSubmit(e));
+    var toggleFocus = function(t){
+        if(t == true){
             $("#form-tel").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
             _inputObj = document.querySelector("#form-tel");
             _toggle = false;
@@ -146,8 +138,9 @@ $(document).ready(function(){
             // 清空输入项
             $('#form-num').val('');
             $('#form-tel').val('');
-            _toggle = false;
-            toggleFocus();
+            toggleFocus(false);
+        } else {
+            toggleFocus(!_toggle);
         }
     };
 
@@ -175,7 +168,7 @@ $(document).ready(function(){
                     url:'http://localhost:3457/print',
                     cache:false,
                     data:{
-                        mobile  : mobile
+                         mobile  : mobile
                         ,orderID : orderID
                     }
                 }).done(function(err){
@@ -189,21 +182,15 @@ $(document).ready(function(){
                         setTimeout(function(){
                             $("#ticketOutput").fadeOut(1);
                             $("#ticketGet").fadeIn(1);
-                            setTimeout(function(){
-                                ticketOut(null,$("#ticketGet"),false);
-                            },5000);
+                            setTimeout(function(){ ticketOut(null,$("#ticketGet"),false); },5000);
                         },3000);
                     } else if(err.error===704){
                         $("#ticketSysError").fadeIn(1);
-                        setTimeout(function(){
-                            ticketOut(null,$("#ticketSysError"),true);
-                        },5000);
+                        setTimeout(function(){ ticketOut(null,$("#ticketSysError"),true); },5000);
                     } else if(err.error===500){
                         $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
                         $("#ticketError").fadeIn(1);
-                        setTimeout(function(){
-                            ticketOut(null,$("#ticketError"),true);
-                        },10000);
+                        setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },10000);
                     } else {
                         $('#ticketErrText').text(err.errorMsg);
                         $("#ticketError").fadeIn(1);
