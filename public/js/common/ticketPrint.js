@@ -6,7 +6,7 @@ $(document).ready(function(){
     $(".pup-wrap").fadeOut(1);
 
     // 关闭弹窗
-    $(".atm-pupClose").on("touchend click",function(){
+    $(".atm-pupClose").on("click",function(){
         $(this).parents(".pup-wrap").fadeOut(1);
         $('#form-num').val('');
         $('#form-tel').val('');
@@ -17,14 +17,14 @@ $(document).ready(function(){
     var _inputObj = document.querySelector("#form-num"); // 首次打开
     var _num = ""; // 值
 
-    $(".atm-form").on("touchend click","input",function(){
+    $(".atm-form").on("click","input",function(){
         _inputObj = this;
         _num = "";
         $(this).addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
     });
 
     // 输入数字
-    $(".num-keypad-wrap").on("touchend click",".keypad-item",function(){
+    $(".num-keypad-wrap").on("click",".keypad-item",function(){
         if(new Date().getTIme() - lastClickTime <600){
             return false;
         }else{
@@ -45,7 +45,7 @@ $(document).ready(function(){
     });
 
     //删除数字
-    $(".num-keypad-wrap").on("touchend click",".keypad-del",function(){
+    $(".num-keypad-wrap").on("click",".keypad-del",function(){
         var _txtLength = _inputObj.value.length;
         if(_txtLength <= 0){
             return false;
@@ -56,7 +56,7 @@ $(document).ready(function(){
 
     //切换焦点
     var _toggle = true;
-    $(".num-keypad-wrap").on("touchend click",".keypad-ok",function(){
+    $(".num-keypad-wrap").on("click",".keypad-ok",function(){
         if(_toggle ==true){
             $("#form-tel").focus().addClass("inputCur").parent().siblings().find("input").removeClass("inputCur");
             _inputObj = document.querySelector("#form-tel");
@@ -86,7 +86,7 @@ $(document).ready(function(){
     });
 
     // 后台数据交互
-    $("#printTicket").on("touchend click",function(e){//.click(function(e){
+    $("#printTicket").on("click",function(e){//.click(function(e){
         e.preventDefault();
         var orderID = $('#form-num').val();
         var mobile = $('#form-tel').val();
