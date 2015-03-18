@@ -41,7 +41,7 @@ img {max-width: 100%;border: 0 none;vertical-align: top;}
 .atm-pupHead span{position:absolute;height:80px;width:80px;top:0;right:0;background: url(/img/close-icon.png) 50% 50% no-repeat;}
 .load-wrap{height:172px;width:135px;margin:45px auto 5px auto;position:relative;}
 .load-item1{position:absolute;bottom:0;left:0;height:100%;width:100%;background:url(/img/loading_1.png) bottom center no-repeat;}
-.load-item2{position:absolute;bottom:0;left:0;width:100%;background:url(/img/loading_2.png) bottom center no-repeat;}
+.load-item2{position:absolute;bottom:0;left:0;height:100%;width:100%;background:url(/img/loading_2.png) bottom center no-repeat;}
 .load-txt{text-align:center;}
 
 .dy-wrap{height:100px;text-align:center;line-height:100px;margin-top:95px;}

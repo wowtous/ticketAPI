@@ -103,6 +103,13 @@ $(document).ready(function(){
     });
 
     // 动画
+    $(".load-item2").velocity({
+        bottom:0,
+        opacity:0
+    },{
+        duration:1500,
+        loop:true
+    });
     $(".chupiao i").velocity({
         bottom:-12,
         opacity:1
@@ -144,6 +151,7 @@ $(document).ready(function(){
         }
     };
 
+    // 后台数据处理
     var ticketSubmit = function(){//.click(function(e){
         var tmpClickTime = new Date().getTime();
         if(tmpClickTime - lastClickTime <120){
