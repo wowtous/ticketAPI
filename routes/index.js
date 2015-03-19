@@ -17,6 +17,7 @@ var router = express.Router();
 var debug = true;
 var fontFilePath = 'fonts/msyh.ttf';
 var checkupdateFile = '/home/ubuntu/printDriver.tar.gz';
+var seriNum = 1;
 
 var randomObjectId = function () {
     return crypto.createHash('md5').update(Math.random().toString()).digest('hex').substring(0, 24);
@@ -179,7 +180,11 @@ router.post('/ticket/verify', function (request, response) {
                             cb('queryOrderMemberError', null);
                         } else {
                             // 生成打印信息
-                            printData.orderID = order.orderID;
+                            if(debug){
+                                printData.orderID = seriNum +"";
+                            } else{
+                                printData.orderID = order.orderID;
+                            }
                             printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
                             printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
                             printData.productName = order.product.name;
@@ -258,7 +263,7 @@ router.post('/ticket/verify', function (request, response) {
                 QRUrl = 'http://dd885.com/ticketActivity?sourceMember=' + memberID + '&couponCode=' + couponCode[i];
                 tasks.push(createQRCode(QRUrl, pngFileName[i]));
             }
-            pdfFileName += '.pdf';
+            pdfFileName += seriNum+'.pdf';
             async.series(tasks, function (error, result) {
                 cb(null, null);
             });
@@ -281,6 +286,7 @@ router.post('/ticket/verify', function (request, response) {
                     if(debug){ console.log('pdfGenerateFailed 613'); }
                     cb('pdfGenerateFailed', null);
                 } else {
+                    seriNum++;
                     cb(null, null);
                 }
             });
