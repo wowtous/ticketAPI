@@ -154,11 +154,11 @@ $(document).ready(function(){
             var mobile = $('#form-tel').val();
             var isOK = false;
             if(""===orderID||typeof(orderID)==="undefined"||orderID.length<=0){
-                $('#ticketErrText').text('请输入需要打印的订单号！');
+                $('#ticketErrText').text('请输入票号！');
                 ticketOut($("#ticketError"),null,true);
                 return false;
             } else if(""===mobile||typeof(mobile)==="undefined"||mobile.length!=4){
-                $('#ticketErrText').text('请输入正确的手机号码后4位！');
+                $('#ticketErrText').text('请输入手机号码后4位！');
                 ticketOut($("#ticketError"),null,true);
                 return false;
             } else {
@@ -188,7 +188,7 @@ $(document).ready(function(){
                         $("#ticketSysError").fadeIn(1);
                         setTimeout(function(){ ticketOut(null,$("#ticketSysError"),true); },5000);
                     } else if(err.error===500){
-                        $('#ticketErrText').text('应用程序正在准备中，请稍后再试...');
+                        $('#ticketErrText').text('请求本地客户端超时，请重试或联系客服!');
                         $("#ticketError").fadeIn(1);
                         setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },10000);
                     } else {
@@ -205,7 +205,7 @@ $(document).ready(function(){
                 setTimeout(function(){
                     if(!isOK){
                         $("#ticketLoading").fadeOut(1);
-                        $('#ticketErrText').text('网络故障延迟或后台程序尚未运行');
+                        $('#ticketErrText').text('请求本地客户端超时，请重试或联系客服!');
                         $("#ticketError").fadeIn(1);
                         setTimeout(function(){ ticketOut(null,$("#ticketError"),true); },5000);
                     }

@@ -305,37 +305,37 @@ router.post('/ticket/verify', function (request, response) {
         }
     ], function (error, result) {
         if (error == 'queryMemberError') {
-            response.json({error: 600, errorMsg: '会员查询出错'});
+            response.json({error: 600, errorMsg: '票号或手机号输入有误!'});
         } else if (error == 'noSuchMember') {
-            response.json({error: 601, errorMsg: '会员信息未找到'});
+            response.json({error: 601, errorMsg: '票号或手机号输入有误!'});
         } else if (error == 'queryOrderError') {
-            response.json({error: 602, errorMsg: '订单信息查询出错'});
+            response.json({error: 602, errorMsg: '订单信息查询出错!'});
         } else if (error == 'noSuchOrder') {
-            response.json({error: 603, errorMsg: '无匹配可打印订单'});
+            response.json({error: 603, errorMsg: '票号或手机号输入有误!'});
         } else if (error == 'notValidPlace') {
-            response.json({error: 604, errorMsg: '此订单不能在此机器上打印'});
+            response.json({error: 604, errorMsg: '此订单不能在此机器上打印!'});
         } else if (error == 'ticketPrinted') {
-            response.json({error: 605, errorMsg: '此订单已经打印过'});
+            response.json({error: 605, errorMsg: '此订单已经打印过!'});
         } else if (error == 'queryMachineError') {
-            response.json({error: 606, errorMsg: '机器编号不正常'});
+            response.json({error: 606, errorMsg: '机器编号不匹配!'});
         } else if (error == 'QRGenerateFailed') {
-            response.json({error: 607, errorMsg: "二维码生成失败"});
+            response.json({error: 607, errorMsg: "票号或手机号输入有误!"});
         } else if (error == 'readPDFError') {
-            response.json({error: 608, errorMsg: "门票生成失败"});
+            response.json({error: 608, errorMsg: "出票失败，请重试!"});
         } else if (error == 'machineNotConfig') {
-            response.json({error: 609, errorMsg: "机器暂未上线"});
+            response.json({error: 609, errorMsg: "机器暂未上线!"});
         } else if (error == 'GETCOUPONCODEERROR') {
-            response.json({error: 610, errorMsg: "初始化优惠券识别码失败"});
+            response.json({error: 610, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'queryCouponCodeError'){
-            response.json({error: 611, errorMsg: "优惠券识别码查询失败"});
+            response.json({error: 611, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'couponCodeNotExists'){
-            response.json({error: 612, errorMsg: "优惠券识别码已用完"});
+            response.json({error: 612, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'pdfGenerateFailed'){
-            response.json({error: 613, errorMsg: "门票生成失败"});
+            response.json({error: 613, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'queryOrderMemberError'){
-            response.json({error: 614, errorMsg: "查询会员订单失败"});
+            response.json({error: 614, errorMsg: "出票失败，请重试!"});
         } else if(error == 'noSuchOrderMember'){
-            response.json({error: 615, errorMsg: "查无匹配可确认单"});
+            response.json({error: 615, errorMsg: "出票失败，请重试!"});
         } else {
             response.json({error: 0, errorMsg: "", buffer: ticketPDFBuf, order_ID: order_ID});
         }
