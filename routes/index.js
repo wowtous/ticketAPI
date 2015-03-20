@@ -80,28 +80,6 @@ router.post('/ticket/verify', function (request, response) {
     couponCode = [];
     async.series([
         /*function (cb) {
-            //只选取已确认的  只能是当天的订单对应的member
-            // TODO 已确认的订单号是否唯一
-            //Order.findOne({ orderID : orderID, status : 2, startDate : today },{ "member" : true })
-            Order.findOne({ orderID : orderID, status : 3 },{ "member" : true })
-                .exec(function (error, memberInfo) {
-                if (error) {
-                    if(debug){
-                        console.log('queryOrderMemberError 614,the orderID is:%s', orderID);
-                    }
-                    cb('queryOrderMemberError', null);   // 会员查询出错
-                } else if (memberInfo && memberInfo.member) {
-                    memberID = memberInfo.member;
-                    cb(null, null);
-                } else {
-                    if(debug){
-                        console.log('noSuchOrderMember 615,the orderID is:%s', orderID);
-                    }
-                    cb('noSuchOrderMember', null);       // 会员信息未找到
-                }
-            });
-        },
-        function (cb) {
             //查询下单人的memberID
             Member.findOne({_id : memberID,mobile: eval("/\\d{7}"+mobile+"/")}).exec(function (error, memberInfo) {
                 if (error) {
@@ -177,7 +155,7 @@ router.post('/ticket/verify', function (request, response) {
                         } else if (!isValidProduct) {
                             cb('notValidPlace', null);
                         } else if (!isValidMember) {
-                            cb('queryOrderMemberError', null);
+                            cb('noSuchMember', null);
                         } else {
                             // 生成打印信息
                             if(debug){
@@ -321,7 +299,7 @@ router.post('/ticket/verify', function (request, response) {
         } else if (error == 'QRGenerateFailed') {
             response.json({error: 607, errorMsg: "票号或手机号输入有误!"});
         } else if (error == 'readPDFError') {
-            response.json({error: 608, errorMsg: "出票失败，请重试!"});
+            response.json({error: 608, errorMsg: "门票初始化失败，请重试!"});
         } else if (error == 'machineNotConfig') {
             response.json({error: 609, errorMsg: "机器暂未上线!"});
         } else if (error == 'GETCOUPONCODEERROR') {
@@ -333,9 +311,9 @@ router.post('/ticket/verify', function (request, response) {
         } else if(error == 'pdfGenerateFailed'){
             response.json({error: 613, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'queryOrderMemberError'){
-            response.json({error: 614, errorMsg: "出票失败，请重试!"});
+            response.json({error: 614, errorMsg: "门票初始化失败，请重试!"});
         } else if(error == 'noSuchOrderMember'){
-            response.json({error: 615, errorMsg: "出票失败，请重试!"});
+            response.json({error: 615, errorMsg: "票号或手机号输入有误!"});
         } else {
             response.json({error: 0, errorMsg: "", buffer: ticketPDFBuf, order_ID: order_ID});
         }
