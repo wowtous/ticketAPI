@@ -328,7 +328,7 @@ router.post('/ticket/verify', function (request, response) {
  */
 function ticketDrawing(doc, fontFilePath, pngFileName, idCode, data) {
     doc.rotate(180, {origin: [0, 0]});
-    var firstColumnY = -95;
+    var firstColumnY = -100;
     var firstColumnX = -360;
 
     doc.font(fontFilePath).fontSize(8).text(data.productName, firstColumnX, firstColumnY, {align: 'left'});//产品名称
