@@ -132,4 +132,11 @@
 <script src="/js/velocity.min.js"></script>
 <script src="/js/common/ticketPrint.js"></script>
 </body>
+<script>
+window.oncontextmenu = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+};
+</script>
 </html>
