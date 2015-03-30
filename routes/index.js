@@ -185,7 +185,7 @@ router.post('/ticket/verify', function (request, response) {
                 return function (cb) {
                     CouponCode.findOneAndUpdate({
                         isUsed: false,
-                        cat: "twoside"
+                        cat: "five"
                     }, {isUsed: true}, function (error, couponData) {
                         if (error) {
                             if(debug){  console.log('queryCouponCodeError 611,error is %s', error); }
