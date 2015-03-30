@@ -53,10 +53,16 @@ $(document).ready(function(){
             }else{
                 if(_inputObj.id === "form-num" && _inputObj.value.length<10){
                     _num = $(this).text();
-                    _inputObj.value +=_num;
+                    var cursorPosition = getTxtCursorPosition(_inputObj);
+                    _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition-1,_inputObj.value.length-1);
+                    _inputObj.selectionStart=cursorPosition+1;
+                    _inputObj.selectionEnd=cursorPosition+1;
                 } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
                     _num = $(this).text();
-                    _inputObj.value +=_num;
+                    var cursorPosition = getTxtCursorPosition(_inputObj);
+                    _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition-1,_inputObj.value.length-1);
+                    _inputObj.selectionStart=cursorPosition+1;
+                    _inputObj.selectionEnd=cursorPosition+1;
                 }
             }
         }
@@ -118,6 +124,29 @@ $(document).ready(function(){
         duration:800,
         loop:true
     });
+
+    var getTxtCursorPosition = function (oTxt){
+        var cursurPosition=0;
+        if(oTxt.selectionStart){//非IE浏览器
+            cursurPosition= oTxt.selectionStart;
+        }else{//IE
+            //var range = document.selection.createRange();
+            //range.moveStart("character",-oTxt.value.length);
+            //cursurPosition=range.text.length;
+        }
+        return cursurPosition;
+    };
+
+    var setTxt1CursorPosition = function(oTxt,i){
+        if(oTxt.selectionStart){//非IE浏览器
+            oTxt.selectionStart=i;
+            //oTxt.selectionEnd=i;
+        }else{//IE
+            //var range = oTxt.createTextRange();
+            //range.move("character",i);
+            //range.select();
+        }
+    };
 
     var toggleFocus = function(t){
         if(t == true){
