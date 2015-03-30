@@ -238,7 +238,7 @@ router.post('/ticket/verify', function (request, response) {
             for (var i = 0; i < couponCodeSize; i++) {
                 pdfFileName += '_' + couponCode[i];
                 pngFileName[i] = 'tmp/' + memberID + '_' + couponCode[i] + '_' + i + '.png'; //临时生成的png文件的名称
-                QRUrl = 'http://sh.dd885.com/promotion/1?sourceMember=' + memberID + '&couponCode=' + couponCode[i];
+                QRUrl = 'http://sh.dd885.com/weixin/promotion/1?sourceMember=' + memberID + '&couponCode=' + couponCode[i];
                 tasks.push(createQRCode(QRUrl, pngFileName[i]));
             }
             pdfFileName += seriNum+'.pdf';
