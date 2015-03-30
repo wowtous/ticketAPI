@@ -54,13 +54,21 @@ $(document).ready(function(){
                 if(_inputObj.id === "form-num" && _inputObj.value.length<10){
                     _num = $(this).text();
                     var cursorPosition = getTxtCursorPosition(_inputObj);
-                    _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition-1,_inputObj.value.length-1);
+                    if(cursorPosition == _inputObj.value.length){
+                        _inputObj.value += _num;
+                    }else{
+                        _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition,_inputObj.value.length);
+                    }
                     _inputObj.selectionStart=cursorPosition+1;
                     _inputObj.selectionEnd=cursorPosition+1;
                 } else if(_inputObj.id === "form-tel" && _inputObj.value.length<4){
                     _num = $(this).text();
                     var cursorPosition = getTxtCursorPosition(_inputObj);
-                    _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition-1,_inputObj.value.length-1);
+                    if(cursorPosition == _inputObj.value.length){
+                        _inputObj.value += _num;
+                    }else{
+                        _inputObj.value = _inputObj.value.substring(0,cursorPosition)+_num+_inputObj.value.substring(cursorPosition,_inputObj.value.length);
+                    }
                     _inputObj.selectionStart=cursorPosition+1;
                     _inputObj.selectionEnd=cursorPosition+1;
                 }
@@ -79,7 +87,14 @@ $(document).ready(function(){
             if(_txtLength <= 0){
                 return false;
             }else{
-                _inputObj.value = _inputObj.value.substring(0,_txtLength-1);
+                var cursorPosition = getTxtCursorPosition(_inputObj);
+                if(cursorPosition == _txtLength){
+                    _inputObj.value = _inputObj.value.substring(0,_txtLength-1);
+                }else{
+                    _inputObj.value = _inputObj.value.substring(0,cursorPosition-1)+_inputObj.value.substring(cursorPosition,_inputObj.value.length);
+                }
+                _inputObj.selectionStart=cursorPosition-1;
+                _inputObj.selectionEnd=cursorPosition-1;
             }
         }
         lastClickTime = tmpClickTime;
