@@ -14,7 +14,7 @@ var qrcode = require('qrcode');
 var crypto = require('crypto');
 var fs = require('fs');
 var router = express.Router();
-var debug = true;
+var debug = false;
 var fontFilePath = 'fonts/msyh.ttf';
 var checkupdateFile = '/home/ubuntu/printDriver.tar.gz';
 var seriNum = 1;
@@ -163,9 +163,11 @@ router.post('/ticket/verify', function (request, response) {
                             } else{
                                 printData.orderID = order.orderID;
                             }
+                            var idCard = order.member.idCard;
                             printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
                             printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
                             printData.productName = order.product.name;
+                            printData.orderCode = idCard.substring(idCard.length-4,idCard.length);
                             order_ID = order._id;
                             orderInfo = order;
                             cb(null, null);
