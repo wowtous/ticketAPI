@@ -164,10 +164,12 @@ router.post('/ticket/verify', function (request, response) {
                                 printData.orderID = order.orderID;
                             }
                             var idCard = order.member.idCard;
+                            if(idCard && idCard !== ""){
+                                printData.orderCode = idCard.substring(idCard.length-4,idCard.length);
+                            }
                             printData.useDate = moment(order.startDate).format("YYYY-MM-DD");
                             printData.ticketPrice = order.totalPrice/(order.quantity ? order.quantity : 1);
                             printData.productName = order.product.name;
-                            printData.orderCode = idCard.substring(idCard.length-4,idCard.length);
                             order_ID = order._id;
                             orderInfo = order;
                             cb(null, null);
